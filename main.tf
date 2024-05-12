@@ -1,5 +1,6 @@
+#Create S3 Bucket# #Created this resource first for Backend#
 resource "aws_s3_bucket" "terraform_state" {
-  bucket = "atlastech-state-bucket"  # Update with a globally unique bucket name
+  bucket = var.bucket_name # Update with a globally unique bucket name
 }
 
 resource "aws_s3_bucket_versioning" "terraform_state_versioning" {
@@ -10,6 +11,7 @@ resource "aws_s3_bucket_versioning" "terraform_state_versioning" {
   }
 }
 
+#Create VPC#
 // Create a VPC with CIDR Block, enable DNS hostname/support
 resource "aws_vpc" "tf-vpc1" {
   cidr_block           = "10.0.0.0/16"
@@ -17,7 +19,7 @@ resource "aws_vpc" "tf-vpc1" {
   enable_dns_support   = true
 
   tags = {
-    "Name" = "tf-vpc1"
+    "Name" = var.vpc_name
   }
 }
 
@@ -26,7 +28,7 @@ resource "aws_internet_gateway" "tf-ig1" {
   vpc_id = aws_vpc.tf-vpc1.id
 
   tags = {
-    "Name" = "tf-ig1"
+    "Name" = var.ig_name
   }
 }
 
@@ -40,7 +42,7 @@ resource "aws_route_table" "tf-rt1" {
   }
 
   tags = {
-    "Name" = "tf-route1"
+    "Name" = var.rt_name
   }
 }
 
@@ -51,7 +53,7 @@ resource "aws_subnet" "tf-subnet1" {
   availability_zone = "us-east-1a"
 
   tags = {
-    "Name" = "tf-subnet1"
+    "Name" = var.subnet1_name
   }
 }
 
@@ -59,4 +61,45 @@ resource "aws_subnet" "tf-subnet1" {
 resource "aws_route_table_association" "subnetassociation" {
   subnet_id      = aws_subnet.tf-subnet1.id
   route_table_id = aws_route_table.tf-rt1.id
+}
+
+#Security Group#
+// Create a SG that will allow SSH, HTTP/s
+resource "aws_security_group" "tf-sg1" {
+  description = "Terraform Project SG"
+  name        = var.sg_name
+  vpc_id      = aws_vpc.tf-vpc1.id
+
+  ingress {
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow SSH 22/tcp"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+  }
+
+  ingress {
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow HTTP 80/tcp"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+  }
+
+  ingress {
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow HTTPs 443/tcp"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+  }
+
+  egress {
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "ALL Outbound Rule"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1" # -1 represents all IP protocols, including TCP, UDP, and ICMP
+  }
+
 }
