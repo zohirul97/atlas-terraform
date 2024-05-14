@@ -192,3 +192,89 @@ module "eks" {
     }
   }
 }
+
+
+#Kubernetes Deployment#
+resource "kubernetes_deployment" "example" {
+  metadata {
+    name = "terraform-example"
+    labels = {
+      test = "AtlasApp"
+    }
+  }
+
+  spec {
+    replicas = 3
+
+    selector {
+      match_labels = {
+        test = "AtlasApp"
+      }
+    }
+
+    template {
+      metadata {
+        labels = {
+          test = "AtlasApp"
+        }
+      }
+
+      spec {
+        container {
+          image = "nginx:latest"
+          name  = "example"
+
+          resources {
+            limits = {
+              cpu    = "0.5"
+              memory = "512Mi"
+            }
+            requests = {
+              cpu    = "250m"
+              memory = "50Mi"
+            }
+          }
+
+          liveness_probe {
+            http_get {
+              path = "/"
+              port = 80
+
+              http_header {
+                name  = "X-Custom-Header"
+                value = "Awesome"
+              }
+            }
+
+            initial_delay_seconds = 3
+            period_seconds        = 3
+          }
+        }
+      }
+    }
+  }
+}
+
+#Kubernetes Service (Load Balancer)
+resource "kubernetes_service" "example" {
+  metadata {
+    name = "nginx-service"
+    labels = {
+      app = "nginx"
+    }
+  }
+
+  spec {
+    selector = {
+      app = kubernetes_deployment.example.metadata[0].labels["test"]
+    }
+
+    port {
+      port        = 80
+      target_port = 80
+    }
+
+    type = "LoadBalancer"  # Use LoadBalancer to expose externally
+    # Alternatively, you can use "NodePort" for accessing via the Node's IP:Port
+  }
+}
