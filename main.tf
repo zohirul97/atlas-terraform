@@ -51,6 +51,7 @@ resource "aws_subnet" "tf-subnet1" {
   vpc_id            = aws_vpc.tf-vpc1.id
   cidr_block        = "10.0.1.0/24"
   availability_zone = "us-east-1a"
+  map_public_ip_on_launch = true
 
   tags = {
     "Name" = var.subnet1_name
@@ -68,6 +69,7 @@ resource "aws_subnet" "tf-subnet2" {
   vpc_id            = aws_vpc.tf-vpc1.id
   cidr_block        = "10.0.2.0/24" // Adjust the CIDR block as needed
   availability_zone = "us-east-1b"  // Choose a different AZ
+  map_public_ip_on_launch = true
 
   tags = {
     "Name" = var.subnet2_name
@@ -156,11 +158,6 @@ module "eks" {
   cluster_endpoint_public_access           = true
   enable_cluster_creator_admin_permissions = true
 
-  cluster_addons = {
-    aws-ebs-csi-driver = {
-      service_account_role_arn = aws_iam_role.atlas_eks_role.arn
-    }
-  }
 
   vpc_id = aws_vpc.tf-vpc1.id
   subnet_ids = [
