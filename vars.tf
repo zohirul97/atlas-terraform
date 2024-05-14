@@ -18,6 +18,14 @@ variable "subnet1_name" {
   type = string
 }
 
+variable "subnet2_name" {
+  type = string
+}
+
 variable "sg_name" {
+  type = string
+}
+
+variable "cluster_name" {
   type = string
 }
