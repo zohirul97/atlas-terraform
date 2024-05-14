@@ -29,3 +29,7 @@ variable "sg_name" {
 variable "cluster_name" {
   type = string
 }
+
+variable "region" {
+  type = string
+}

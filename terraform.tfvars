@@ -13,3 +13,5 @@ subnet2_name = "tf-subnet2"
 sg_name = "tf-sg1"
 
 cluster_name = "atlas-eks-cluster"
+
+region = "us-east-1"
